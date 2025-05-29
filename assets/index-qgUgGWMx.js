@@ -9757,7 +9757,7 @@ const CartInfo = ({
                 justifyContent: "center",
                 alignItems: "center",
                 children: [
-                  remainingForFreeShipping < 0 ? /* @__PURE__ */ jsx$1(Text, { type: "Caption", color: "#666", children: `${remainingForFreeShipping.toLocaleString()}원 더 구매하면 배송비 무료!` }) : /* @__PURE__ */ jsx$1(Text, { type: "Caption", color: "black", weight: "semibold", children: "🎉🎉 무료 배송이 가능합니다 🎉🎉" }),
+                  remainingForFreeShipping > 0 ? /* @__PURE__ */ jsx$1(Text, { type: "Caption", color: "#666", children: `${remainingForFreeShipping.toLocaleString()}원 더 구매하면 배송비 무료!` }) : /* @__PURE__ */ jsx$1(Text, { type: "Caption", color: "black", weight: "semibold", children: "🎉🎉 무료 배송이 가능합니다 🎉🎉" }),
                   /* @__PURE__ */ jsx$1(
                     Progress,
                     {
@@ -9807,7 +9807,7 @@ const CartInfo = ({
           position: sticky;
         `,
         onClick: onNext,
-        disabled: (cartItems == null ? void 0 : cartItems.length) === 0,
+        disabled: (cartItems == null ? void 0 : cartItems.length) === 0 || selectedCartItemCount === 0,
         children: "주문확인"
       }
     )
@@ -10060,21 +10060,9 @@ const useFetchData = (options) => {
   }, [fetch2, options == null ? void 0 : options.autoFetch]);
   return { ...data, fetch: fetch2, mutate };
 };
-const CartContext = reactExports.createContext(null);
-const ShoppingContext = ({ children }) => {
-  const cart = useFetchData({ autoFetch: getCartItemList });
-  return /* @__PURE__ */ jsx$1(CartContext.Provider, { value: { cart }, children });
-};
-const useCartContext = () => {
-  const context = reactExports.useContext(CartContext);
-  if (!context) {
-    throw new Error("useCartContext must be used within a ShoppingContext");
-  }
-  return context;
-};
 const useCart = () => {
   var _a;
-  const { cart } = useCartContext();
+  const cart = useFetchData({ autoFetch: getCartItemList });
   const { showToast } = reactExports.useContext(ToastContext);
   const [checkedItems, setCheckedItems] = reactExports.useState(/* @__PURE__ */ new Set());
   const hasInitialized = reactExports.useRef(false);
@@ -10179,7 +10167,7 @@ const AppLayout = ({ children }) => {
   return /* @__PURE__ */ jsx$1(StyledAppLayout, { children });
 };
 const App = () => {
-  return /* @__PURE__ */ jsx$1(AppLayout, { children: /* @__PURE__ */ jsx$1(ToastProvider, { children: /* @__PURE__ */ jsx$1(ShoppingContext, { children: /* @__PURE__ */ jsx$1(CartPage, {}) }) }) });
+  return /* @__PURE__ */ jsx$1(AppLayout, { children: /* @__PURE__ */ jsx$1(ToastProvider, { children: /* @__PURE__ */ jsx$1(CartPage, {}) }) });
 };
 client.createRoot(document.getElementById("root")).render(
   /* @__PURE__ */ jsx$1(React.StrictMode, { children: /* @__PURE__ */ jsx$1(App, {}) })
