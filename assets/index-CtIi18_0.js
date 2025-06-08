@@ -17069,34 +17069,6 @@ function logV6DeprecationWarnings(renderFuture, routerFuture) {
     if (routerFuture.v7_skipActionErrorRevalidation === void 0) ;
   }
 }
-function Navigate(_ref4) {
-  let {
-    to,
-    replace: replace2,
-    state,
-    relative
-  } = _ref4;
-  !useInRouterContext() ? invariant(false) : void 0;
-  let {
-    future,
-    static: isStatic
-  } = reactExports.useContext(NavigationContext);
-  let {
-    matches
-  } = reactExports.useContext(RouteContext);
-  let {
-    pathname: locationPathname
-  } = useLocation();
-  let navigate = useNavigate();
-  let path = resolveTo(to, getResolveToMatches(matches, future.v7_relativeSplatPath), locationPathname, relative === "path");
-  let jsonPath = JSON.stringify(path);
-  reactExports.useEffect(() => navigate(JSON.parse(jsonPath), {
-    replace: replace2,
-    state,
-    relative
-  }), [navigate, jsonPath, relative, replace2, state]);
-  return null;
-}
 function Outlet(props) {
   return useOutlet(props.context);
 }
@@ -21447,7 +21419,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: /* @__PURE__ */ jsx$1(Navigate, { to: "/cart", replace: true })
+        element: /* @__PURE__ */ jsx$1(CartPage, {})
       },
       {
         path: "/cart",
