@@ -17215,19 +17215,19 @@ try {
 }
 function createBrowserRouter(routes, opts) {
   return createRouter({
-    basename: opts == null ? void 0 : opts.basename,
-    future: _extends({}, opts == null ? void 0 : opts.future, {
+    basename: void 0,
+    future: _extends({}, void 0, {
       v7_prependBasename: true
     }),
     history: createBrowserHistory({
-      window: opts == null ? void 0 : opts.window
+      window: void 0
     }),
-    hydrationData: (opts == null ? void 0 : opts.hydrationData) || parseHydrationData(),
+    hydrationData: parseHydrationData(),
     routes,
     mapRouteProperties,
-    dataStrategy: opts == null ? void 0 : opts.dataStrategy,
-    patchRoutesOnNavigation: opts == null ? void 0 : opts.patchRoutesOnNavigation,
-    window: opts == null ? void 0 : opts.window
+    dataStrategy: void 0,
+    patchRoutesOnNavigation: void 0,
+    window: void 0
   }).initialize();
 }
 function parseHydrationData() {
@@ -21440,36 +21440,30 @@ const OrderConfirmPage = () => {
   }
   return /* @__PURE__ */ jsx$1(OrderConfirm, { cartItems, totalDiscountPrice });
 };
-const router = createBrowserRouter(
-  [
-    {
-      path: "/",
-      element: /* @__PURE__ */ jsx$1(App, {}),
-      children: [
-        {
-          index: true,
-          element: /* @__PURE__ */ jsx$1(Navigate, { to: "/cart", replace: true })
-        },
-        {
-          path: "/cart",
-          element: /* @__PURE__ */ jsx$1(CartPage, {})
-        },
-        {
-          path: "/order-checkout",
-          element: /* @__PURE__ */ jsx$1(OrderCheckoutPage, {})
-        },
-        {
-          path: "/order-confirm",
-          element: /* @__PURE__ */ jsx$1(OrderConfirmPage, {})
-        }
-      ]
-    }
-  ],
+const router = createBrowserRouter([
   {
-    basename: "/react-shopping-cart"
-    // GitHub repo 이름으로 변경
+    path: "/",
+    element: /* @__PURE__ */ jsx$1(App, {}),
+    children: [
+      {
+        index: true,
+        element: /* @__PURE__ */ jsx$1(Navigate, { to: "/cart", replace: true })
+      },
+      {
+        path: "/cart",
+        element: /* @__PURE__ */ jsx$1(CartPage, {})
+      },
+      {
+        path: "/order-checkout",
+        element: /* @__PURE__ */ jsx$1(OrderCheckoutPage, {})
+      },
+      {
+        path: "/order-confirm",
+        element: /* @__PURE__ */ jsx$1(OrderConfirmPage, {})
+      }
+    ]
   }
-);
+]);
 ReactDOM.createRoot(document.getElementById("root")).render(
   /* @__PURE__ */ jsx$1(React$2.StrictMode, { children: /* @__PURE__ */ jsx$1(RouterProvider, { router }) })
 );
