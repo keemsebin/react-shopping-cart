@@ -1558,14 +1558,14 @@ function handleInterpolation(mergedProps, registered, interpolation) {
       return "";
     }
     case "object": {
-      var keyframes = interpolation;
-      if (keyframes.anim === 1) {
+      var keyframes2 = interpolation;
+      if (keyframes2.anim === 1) {
         cursor = {
-          name: keyframes.name,
-          styles: keyframes.styles,
+          name: keyframes2.name,
+          styles: keyframes2.styles,
           next: cursor
         };
-        return keyframes.name;
+        return keyframes2.name;
       }
       var serializedStyles = interpolation;
       if (serializedStyles.styles !== void 0) {
@@ -17515,6 +17515,18 @@ function css() {
   }
   return serializeStyles(args);
 }
+function keyframes() {
+  var insertable = css.apply(void 0, arguments);
+  var name = "animation-" + insertable.name;
+  return {
+    name,
+    styles: "@keyframes " + name + "{" + insertable.styles + "}",
+    anim: 1,
+    toString: function toString() {
+      return "_EMO_" + this.name + "_" + this.styles + "_EMO_";
+    }
+  };
+}
 var reactPropsRegex = /^((children|dangerouslySetInnerHTML|key|ref|autoFocus|defaultValue|defaultChecked|innerHTML|suppressContentEditableWarning|suppressHydrationWarning|valueLink|abbr|accept|acceptCharset|accessKey|action|allow|allowUserMedia|allowPaymentRequest|allowFullScreen|allowTransparency|alt|async|autoComplete|autoPlay|capture|cellPadding|cellSpacing|challenge|charSet|checked|cite|classID|className|cols|colSpan|content|contentEditable|contextMenu|controls|controlsList|coords|crossOrigin|data|dateTime|decoding|default|defer|dir|disabled|disablePictureInPicture|disableRemotePlayback|download|draggable|encType|enterKeyHint|fetchpriority|fetchPriority|form|formAction|formEncType|formMethod|formNoValidate|formTarget|frameBorder|headers|height|hidden|high|href|hrefLang|htmlFor|httpEquiv|id|inputMode|integrity|is|keyParams|keyType|kind|label|lang|list|loading|loop|low|marginHeight|marginWidth|max|maxLength|media|mediaGroup|method|min|minLength|multiple|muted|name|nonce|noValidate|open|optimum|pattern|placeholder|playsInline|poster|preload|profile|radioGroup|readOnly|referrerPolicy|rel|required|reversed|role|rows|rowSpan|sandbox|scope|scoped|scrolling|seamless|selected|shape|size|sizes|slot|span|spellCheck|src|srcDoc|srcLang|srcSet|start|step|style|summary|tabIndex|target|title|translate|type|useMap|value|width|wmode|wrap|about|datatype|inlist|prefix|property|resource|typeof|vocab|autoCapitalize|autoCorrect|autoSave|color|incremental|fallback|inert|itemProp|itemScope|itemType|itemID|itemRef|on|option|results|security|unselectable|accentHeight|accumulate|additive|alignmentBaseline|allowReorder|alphabetic|amplitude|arabicForm|ascent|attributeName|attributeType|autoReverse|azimuth|baseFrequency|baselineShift|baseProfile|bbox|begin|bias|by|calcMode|capHeight|clip|clipPathUnits|clipPath|clipRule|colorInterpolation|colorInterpolationFilters|colorProfile|colorRendering|contentScriptType|contentStyleType|cursor|cx|cy|d|decelerate|descent|diffuseConstant|direction|display|divisor|dominantBaseline|dur|dx|dy|edgeMode|elevation|enableBackground|end|exponent|externalResourcesRequired|fill|fillOpacity|fillRule|filter|filterRes|filterUnits|floodColor|floodOpacity|focusable|fontFamily|fontSize|fontSizeAdjust|fontStretch|fontStyle|fontVariant|fontWeight|format|from|fr|fx|fy|g1|g2|glyphName|glyphOrientationHorizontal|glyphOrientationVertical|glyphRef|gradientTransform|gradientUnits|hanging|horizAdvX|horizOriginX|ideographic|imageRendering|in|in2|intercept|k|k1|k2|k3|k4|kernelMatrix|kernelUnitLength|kerning|keyPoints|keySplines|keyTimes|lengthAdjust|letterSpacing|lightingColor|limitingConeAngle|local|markerEnd|markerMid|markerStart|markerHeight|markerUnits|markerWidth|mask|maskContentUnits|maskUnits|mathematical|mode|numOctaves|offset|opacity|operator|order|orient|orientation|origin|overflow|overlinePosition|overlineThickness|panose1|paintOrder|pathLength|patternContentUnits|patternTransform|patternUnits|pointerEvents|points|pointsAtX|pointsAtY|pointsAtZ|preserveAlpha|preserveAspectRatio|primitiveUnits|r|radius|refX|refY|renderingIntent|repeatCount|repeatDur|requiredExtensions|requiredFeatures|restart|result|rotate|rx|ry|scale|seed|shapeRendering|slope|spacing|specularConstant|specularExponent|speed|spreadMethod|startOffset|stdDeviation|stemh|stemv|stitchTiles|stopColor|stopOpacity|strikethroughPosition|strikethroughThickness|string|stroke|strokeDasharray|strokeDashoffset|strokeLinecap|strokeLinejoin|strokeMiterlimit|strokeOpacity|strokeWidth|surfaceScale|systemLanguage|tableValues|targetX|targetY|textAnchor|textDecoration|textRendering|textLength|to|transform|u1|u2|underlinePosition|underlineThickness|unicode|unicodeBidi|unicodeRange|unitsPerEm|vAlphabetic|vHanging|vIdeographic|vMathematical|values|vectorEffect|version|vertAdvY|vertOriginX|vertOriginY|viewBox|viewTarget|visibility|widths|wordSpacing|writingMode|x|xHeight|x1|x2|xChannelSelector|xlinkActuate|xlinkArcrole|xlinkHref|xlinkRole|xlinkShow|xlinkTitle|xlinkType|xmlBase|xmlns|xmlnsXlink|xmlLang|xmlSpace|y|y1|y2|yChannelSelector|z|zoomAndPan|for|class|autofocus)|(([Dd][Aa][Tt][Aa]|[Aa][Rr][Ii][Aa]|x)-.*))$/;
 var isPropValid = /* @__PURE__ */ memoize(
   function(prop) {
@@ -21412,9 +21424,49 @@ const OrderConfirmPage = () => {
   }
   return /* @__PURE__ */ jsx$1(OrderConfirm, { cartItems, totalDiscountPrice });
 };
+const woowa = "/react-shopping-cart/assets/%E1%84%92%E1%85%A2%E1%86%BC%E1%84%89%E1%85%A5%E1%86%BC%E1%84%8B%E1%85%B5-lNzkDmzx.png";
 const NotFound = () => {
-  return /* @__PURE__ */ jsx$1("div", { children: /* @__PURE__ */ jsx$1("h1", { children: "404 - Page Not Found" }) });
+  const navigate = useNavigate();
+  const handleNavigateHome = () => {
+    navigate("/");
+  };
+  return /* @__PURE__ */ jsx$1(AppLayout, { children: /* @__PURE__ */ jsxs(
+    Flex,
+    {
+      direction: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: "20px",
+      height: "100vh",
+      children: [
+        /* @__PURE__ */ jsx$1(StyledImg, { src: woowa, alt: "404 Not Found" }),
+        /* @__PURE__ */ jsx$1(Text, { type: "Heading", weight: "semibold", children: "경로가 잘못되었습니다." }),
+        /* @__PURE__ */ jsx$1(Button, { size: "xl", width: "100%", onClick: handleNavigateHome, children: "홈으로 돌아가기" })
+      ]
+    }
+  ) });
 };
+const rotate360 = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+const StyledImg = newStyled.img`
+  width: 150px;
+  height: 130px;
+  object-fit: fit-contain;
+  border-radius: 8px;
+
+  animation: ${rotate360} 3s linear infinite;
+
+  &:hover {
+    animation-play-state: paused;
+  }
+`;
+const isGitHubPages = window.location.hostname.includes("github.io");
 const router = createBrowserRouter(
   [
     {
@@ -21445,7 +21497,7 @@ const router = createBrowserRouter(
     }
   ],
   {
-    basename: "/react-shopping-cart"
+    basename: isGitHubPages ? "/react-shopping-cart" : ""
   }
 );
 ReactDOM.createRoot(document.getElementById("root")).render(
