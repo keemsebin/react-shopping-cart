@@ -21430,21 +21430,24 @@ const NotFound = () => {
   const handleNavigateHome = () => {
     navigate("/");
   };
-  return /* @__PURE__ */ jsx$1(AppLayout, { children: /* @__PURE__ */ jsxs(
-    Flex,
-    {
-      direction: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      gap: "20px",
-      height: "100vh",
-      children: [
-        /* @__PURE__ */ jsx$1(StyledImg, { src: woowa, alt: "404 Not Found" }),
-        /* @__PURE__ */ jsx$1(Text, { type: "Heading", weight: "semibold", children: "경로가 잘못되었습니다." }),
-        /* @__PURE__ */ jsx$1(Button, { size: "xl", width: "100%", onClick: handleNavigateHome, children: "홈으로 돌아가기" })
-      ]
-    }
-  ) });
+  return /* @__PURE__ */ jsxs(AppLayout, { children: [
+    /* @__PURE__ */ jsx$1(Header, {}),
+    /* @__PURE__ */ jsxs(
+      Flex,
+      {
+        direction: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: "20px",
+        height: "100vh",
+        children: [
+          /* @__PURE__ */ jsx$1(StyledImg, { src: woowa, alt: "404 Not Found" }),
+          /* @__PURE__ */ jsx$1(Text, { type: "Heading", weight: "semibold", children: "경로가 잘못되었습니다." }),
+          /* @__PURE__ */ jsx$1(Button, { size: "xl", width: "100%", onClick: handleNavigateHome, children: "홈으로 돌아가기" })
+        ]
+      }
+    )
+  ] });
 };
 const rotate360 = keyframes`
   from {
