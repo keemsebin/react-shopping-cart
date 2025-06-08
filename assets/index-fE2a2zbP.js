@@ -17069,6 +17069,34 @@ function logV6DeprecationWarnings(renderFuture, routerFuture) {
     if (routerFuture.v7_skipActionErrorRevalidation === void 0) ;
   }
 }
+function Navigate(_ref4) {
+  let {
+    to,
+    replace: replace2,
+    state,
+    relative
+  } = _ref4;
+  !useInRouterContext() ? invariant(false) : void 0;
+  let {
+    future,
+    static: isStatic
+  } = reactExports.useContext(NavigationContext);
+  let {
+    matches
+  } = reactExports.useContext(RouteContext);
+  let {
+    pathname: locationPathname
+  } = useLocation();
+  let navigate = useNavigate();
+  let path = resolveTo(to, getResolveToMatches(matches, future.v7_relativeSplatPath), locationPathname, relative === "path");
+  let jsonPath = JSON.stringify(path);
+  reactExports.useEffect(() => navigate(JSON.parse(jsonPath), {
+    replace: replace2,
+    state,
+    relative
+  }), [navigate, jsonPath, relative, replace2, state]);
+  return null;
+}
 function Outlet(props) {
   return useOutlet(props.context);
 }
@@ -17187,19 +17215,19 @@ try {
 }
 function createBrowserRouter(routes, opts) {
   return createRouter({
-    basename: void 0,
-    future: _extends({}, void 0, {
+    basename: opts == null ? void 0 : opts.basename,
+    future: _extends({}, opts == null ? void 0 : opts.future, {
       v7_prependBasename: true
     }),
     history: createBrowserHistory({
-      window: void 0
+      window: opts == null ? void 0 : opts.window
     }),
-    hydrationData: parseHydrationData(),
+    hydrationData: (opts == null ? void 0 : opts.hydrationData) || parseHydrationData(),
     routes,
     mapRouteProperties,
-    dataStrategy: void 0,
-    patchRoutesOnNavigation: void 0,
-    window: void 0
+    dataStrategy: opts == null ? void 0 : opts.dataStrategy,
+    patchRoutesOnNavigation: opts == null ? void 0 : opts.patchRoutesOnNavigation,
+    window: opts == null ? void 0 : opts.window
   }).initialize();
 }
 function parseHydrationData() {
@@ -21412,26 +21440,36 @@ const OrderConfirmPage = () => {
   }
   return /* @__PURE__ */ jsx$1(OrderConfirm, { cartItems, totalDiscountPrice });
 };
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      element: /* @__PURE__ */ jsx$1(App, {}),
+      children: [
+        {
+          index: true,
+          element: /* @__PURE__ */ jsx$1(Navigate, { to: "/cart", replace: true })
+        },
+        {
+          path: "/cart",
+          element: /* @__PURE__ */ jsx$1(CartPage, {})
+        },
+        {
+          path: "/order-checkout",
+          element: /* @__PURE__ */ jsx$1(OrderCheckoutPage, {})
+        },
+        {
+          path: "/order-confirm",
+          element: /* @__PURE__ */ jsx$1(OrderConfirmPage, {})
+        }
+      ]
+    }
+  ],
   {
-    path: "/",
-    element: /* @__PURE__ */ jsx$1(App, {}),
-    children: [
-      {
-        path: "/cart",
-        element: /* @__PURE__ */ jsx$1(CartPage, {})
-      },
-      {
-        path: "/order-checkout",
-        element: /* @__PURE__ */ jsx$1(OrderCheckoutPage, {})
-      },
-      {
-        path: "/order-confirm",
-        element: /* @__PURE__ */ jsx$1(OrderConfirmPage, {})
-      }
-    ]
+    basename: "/react-shopping-cart"
+    // GitHub repo 이름으로 변경
   }
-]);
+);
 ReactDOM.createRoot(document.getElementById("root")).render(
   /* @__PURE__ */ jsx$1(React$2.StrictMode, { children: /* @__PURE__ */ jsx$1(RouterProvider, { router }) })
 );
