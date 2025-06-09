@@ -20766,6 +20766,7 @@ const calculateBOGODiscount = (cartItems) => {
   return Math.max(...eligibleItems.map((item) => item.product.price));
 };
 const useModalSelectCoupon = ({
+  isAutoMode,
   coupons,
   onApplyCoupon,
   totalPrice,
@@ -20783,12 +20784,6 @@ const useModalSelectCoupon = ({
       setSelectCoupons(currentChecked);
     }
   }, [isOpen, coupons]);
-  const modalItems = coupons.map((coupon) => ({
-    ...coupon,
-    isChecked: selectCoupons.has(coupon.id),
-    isDisabled: coupon.isDisabled || selectCoupons.size >= 2 && !selectCoupons.has(coupon.id)
-    // 🔧 수정
-  }));
   const handleTempToggle = (id) => {
     setSelectCoupons((prev2) => {
       const newSet = new Set(prev2);
@@ -20804,18 +20799,32 @@ const useModalSelectCoupon = ({
     const currentChecked = new Set(
       coupons.filter((coupon) => coupon.isChecked).map((coupon) => coupon.id)
     );
-    currentChecked.forEach((id) => {
-      if (!selectCoupons.has(id)) {
-        onApplyCoupon(id);
-      }
-    });
-    selectCoupons.forEach((id) => {
-      if (!currentChecked.has(id)) {
-        onApplyCoupon(id);
-      }
-    });
+    if (isAutoMode) {
+      currentChecked.forEach((id) => {
+        onApplyCoupon(id, true);
+      });
+      selectCoupons.forEach((id) => {
+        onApplyCoupon(id, false);
+      });
+    } else {
+      currentChecked.forEach((id) => {
+        if (!selectCoupons.has(id)) {
+          onApplyCoupon(id, true);
+        }
+      });
+      selectCoupons.forEach((id) => {
+        if (!currentChecked.has(id)) {
+          onApplyCoupon(id, false);
+        }
+      });
+    }
     onClose();
   };
+  const modalItems = coupons.map((coupon) => ({
+    ...coupon,
+    isChecked: selectCoupons.has(coupon.id),
+    isDisabled: coupon.isDisabled || selectCoupons.size >= 2 && !selectCoupons.has(coupon.id)
+  }));
   const couponDiscount = reactExports.useMemo(() => {
     const selectedCoupons = modalItems.filter((coupon) => coupon.isChecked);
     return selectedCoupons.reduce((total, coupon) => {
@@ -20837,6 +20846,7 @@ const splitDate = (date) => {
   return date.split("-")[0] + `년 ` + date.split("-")[1] + `월 ` + date.split("-")[2] + `일`;
 };
 const CouponModal = ({
+  isAutoMode,
   coupons,
   onApplyCoupon,
   isOpen,
@@ -20847,6 +20857,7 @@ const CouponModal = ({
   onClose
 }) => {
   const { modalCoupons, handleTempToggle, disCountPrice, handleConfirm } = useModalSelectCoupon({
+    isAutoMode,
     coupons,
     onApplyCoupon,
     totalPrice,
@@ -21111,12 +21122,13 @@ const useCouponLogic = ({
 const useCouponSelection = () => {
   const [checkedCoupons, setCheckedCoupons] = reactExports.useState(/* @__PURE__ */ new Set());
   const [isAutoMode, setIsAutoMode] = reactExports.useState(true);
-  const applyCoupon = (id) => {
+  const applyCoupon = (id, currentlyChecked) => {
     if (!checkedCoupons.has(id) && checkedCoupons.size === 2) return;
     setCheckedCoupons((prev2) => {
       const newSet = new Set(prev2);
       if (isAutoMode) setIsAutoMode(false);
-      if (newSet.has(id)) {
+      const isCurrentlyInSet = currentlyChecked ? currentlyChecked : newSet.has(id);
+      if (isCurrentlyInSet) {
         newSet.delete(id);
       } else {
         newSet.add(id);
@@ -21189,6 +21201,7 @@ const useCoupons = ({ cartItems }) => {
     coupons: couponLogic.couponItems,
     applyCoupon: couponSelection.applyCoupon,
     couponDiscount: couponLogic.couponDiscount,
+    isAutoMode: couponSelection.isAutoMode,
     totalPrice,
     deliveryFee,
     totalItemLength,
@@ -21204,6 +21217,7 @@ const OrderCheckout = ({ cartItems }) => {
     applyCoupon,
     totalPrice,
     couponDiscount,
+    isAutoMode,
     deliveryFee,
     specialDeliveryZone,
     totalItemLength,
@@ -21314,6 +21328,7 @@ const OrderCheckout = ({ cartItems }) => {
     /* @__PURE__ */ jsx$1(
       CouponModal,
       {
+        isAutoMode,
         coupons: coupons ?? [],
         totalPrice,
         cartItems,
