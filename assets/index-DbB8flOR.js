@@ -20716,28 +20716,24 @@ const StyledCartItemImg = newStyled.img`
 `;
 const getAvailableCoupons = ({ coupons, totalPrice, cartItems }) => {
   const today = /* @__PURE__ */ new Date();
-  const selectedCoupons = [];
-  const availableCoupons = coupons.filter((item) => {
-    return new Date(item.expirationDate) > today;
-  });
-  availableCoupons.forEach((coupon) => {
+  return coupons.filter((item) => new Date(item.expirationDate) > today).filter((coupon) => {
     if (coupon.code === COUPON_CODES.MIRACLE_SALE && MIRACLE_MORNING_HOURS.includes(today.getHours())) {
-      selectedCoupons.push(coupon);
+      return true;
     }
     if (coupon.code === COUPON_CODES.FIXED_5000 && totalPrice >= PRICE_THRESHOLDS.FIXED_DISCOUNT_MIN) {
-      selectedCoupons.push(coupon);
+      return true;
     }
     if (coupon.code === COUPON_CODES.FREE_SHIPPING && totalPrice < PRICE_THRESHOLDS.FREE_SHIPPING_MAX && totalPrice >= PRICE_THRESHOLDS.FREE_SHIPPING_MIN) {
-      selectedCoupons.push(coupon);
+      return true;
     }
     if (coupon.code === COUPON_CODES.BUY_ONE_GET_ONE) {
       const hasEligibleItem = cartItems == null ? void 0 : cartItems.some(
-        (item) => item.quantity >= DISCOUNT_RATES.MIRACLE_SALE
+        (item) => item.quantity >= QUANTITY_LIMITS.BOGO_MIN_QUANTITY && item.quantity % QUANTITY_LIMITS.BOGO_MIN_QUANTITY === 0
       );
-      if (hasEligibleItem) selectedCoupons.push(coupon);
+      return hasEligibleItem;
     }
+    return false;
   });
-  return selectedCoupons;
 };
 const getOptimalCoupons = ({
   availableCoupons,
@@ -20839,11 +20835,12 @@ const useModalSelectCoupon = ({
     handleConfirm
   };
 };
+const formatDate = (date) => {
+  const dateObj = new Date(date);
+  return `${dateObj.getFullYear()}년 ${dateObj.getMonth() + 1}월 ${dateObj.getDate()}일`;
+};
 const parseHour = (time) => {
   return time.split(":")[0];
-};
-const splitDate = (date) => {
-  return date.split("-")[0] + `년 ` + date.split("-")[1] + `월 ` + date.split("-")[2] + `일`;
 };
 const CouponModal = ({
   isAutoMode,
@@ -20916,7 +20913,7 @@ const CouponModal = ({
               ),
               /* @__PURE__ */ jsxs(Text, { type: "Caption", color: isGrayedOut ? "gray" : "black", children: [
                 "만료일: ",
-                splitDate(item.expirationDate)
+                formatDate(item.expirationDate)
               ] }),
               item.minimumAmount && /* @__PURE__ */ jsxs(Text, { type: "Caption", color: isGrayedOut ? "gray" : "black", children: [
                 "최소 주문 금액: ",
@@ -21080,17 +21077,13 @@ const useCouponLogic = ({
 }) => {
   const optimalCoupons = reactExports.useMemo(() => {
     if (!coupons) return [];
-    const available = getAvailableCoupons({
-      coupons: coupons.map((item) => ({
-        ...item,
-        isChecked: false,
-        isDisabled: false
-      })),
+    const availableCoupons = getAvailableCoupons({
+      coupons,
       totalPrice,
       cartItems
     });
     return getOptimalCoupons({
-      availableCoupons: available,
+      availableCoupons,
       totalPrice,
       cartItems,
       specialDeliveryZone
@@ -21122,16 +21115,15 @@ const useCouponLogic = ({
 const useCouponSelection = () => {
   const [checkedCoupons, setCheckedCoupons] = reactExports.useState(/* @__PURE__ */ new Set());
   const [isAutoMode, setIsAutoMode] = reactExports.useState(true);
-  const applyCoupon = (id, currentlyChecked) => {
+  const applyCoupon = (id, shouldBeChecked) => {
     if (!checkedCoupons.has(id) && checkedCoupons.size === 2) return;
     setCheckedCoupons((prev2) => {
       const newSet = new Set(prev2);
       if (isAutoMode) setIsAutoMode(false);
-      const isCurrentlyInSet = currentlyChecked ? currentlyChecked : newSet.has(id);
-      if (isCurrentlyInSet) {
-        newSet.delete(id);
-      } else {
+      if (shouldBeChecked) {
         newSet.add(id);
+      } else {
+        newSet.delete(id);
       }
       return newSet;
     });
@@ -21341,6 +21333,12 @@ const OrderCheckout = ({ cartItems }) => {
     )
   ] });
 };
+const isCartItem = (item) => {
+  return typeof item === "object" && item !== null && typeof item.id === "number" && typeof item.isChecked === "boolean" && typeof item.quantity === "number" && typeof item.product === "object";
+};
+const isCartItemArray = (data) => {
+  return Array.isArray(data) && data.length > 0 && data.every(isCartItem);
+};
 const EmptyOrder = () => {
   const navigate = useNavigate();
   const handleNavigateCart = () => {
@@ -21381,7 +21379,7 @@ const EmptyOrder = () => {
 const OrderCheckoutPage = () => {
   const location = useLocation();
   const cartItems = location.state;
-  if (cartItems === null) {
+  if (!isCartItemArray(cartItems)) {
     return /* @__PURE__ */ jsx$1(EmptyOrder, {});
   }
   return /* @__PURE__ */ jsx$1(OrderCheckout, { cartItems });
