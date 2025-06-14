@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { css } from '@emotion/react';
 import { useModal } from '@sebin0580/modal';
 import { useNavigate } from 'react-router-dom';
@@ -15,28 +16,50 @@ import { PriceConfirmSummary } from './PriceCheckoutSummary';
 import Back from '../../../../../public/Back.png';
 import { CartListContainer } from '../../../Cart/container/CartListContainer';
 import { CartItem } from '../../../Cart/types/Cart.types';
-import { useCoupons } from '../hooks/useCoupons';
+import {
+  getAvailableOptimalCoupons,
+  getCouponDiscount,
+  isCouponDisabled,
+} from '../hooks/useCouponLogic';
+import { CouponResponse } from '../type/coupon.type';
+import { calculatePriceDetails } from '../utils/calculatePrice';
 
 type CartConfirmProps = {
   cartItems: CartItem[];
+  coupons: CouponResponse[];
 };
 
-export const OrderCheckout = ({ cartItems }: CartConfirmProps) => {
+export const OrderCheckout = ({ cartItems, coupons }: CartConfirmProps) => {
   const navigate = useNavigate();
+
   const { isOpen, handleOpenModal, handleCloseModal } = useModal();
-  const {
-    coupons,
-    applyCoupon,
-    totalPrice,
-    couponDiscount,
-    isAutoMode,
-    deliveryFee,
-    specialDeliveryZone,
-    totalItemLength,
-    selectedSpecialDeliveryZone,
-  } = useCoupons({
+
+  const [specialDeliveryZone, setSpecialDeliveryZone] = useState(false);
+
+  const { totalPrice, deliveryFee, totalItemLength } = calculatePriceDetails({
     cartItems,
+    specialDeliveryZone,
   });
+
+  const optimalCoupons = getAvailableOptimalCoupons(
+    coupons,
+    cartItems,
+    totalPrice,
+    specialDeliveryZone
+  );
+
+  const [selectedCouponIds, setSelectedCouponIds] = useState<Set<number>>(
+    new Set(optimalCoupons.map((coupon) => coupon.id))
+  );
+
+  const selectedCoupons = coupons.filter((coupon) => selectedCouponIds.has(coupon.id));
+
+  const couponDiscount = getCouponDiscount(
+    selectedCoupons,
+    cartItems,
+    totalPrice,
+    specialDeliveryZone
+  );
 
   const handleNavigateCartPage = () => {
     navigate('/cart');
@@ -49,6 +72,10 @@ export const OrderCheckout = ({ cartItems }: CartConfirmProps) => {
         totalDiscountPrice: totalPrice - couponDiscount + deliveryFee,
       },
     });
+  };
+
+  const handleApplyCoupons = (ids: Set<number>) => {
+    setSelectedCouponIds(ids);
   };
 
   return (
@@ -110,7 +137,10 @@ export const OrderCheckout = ({ cartItems }: CartConfirmProps) => {
             gap="10px"
             width="100%"
           >
-            <CheckBox checked={specialDeliveryZone} onClick={selectedSpecialDeliveryZone} />
+            <CheckBox
+              checked={specialDeliveryZone}
+              onClick={() => setSpecialDeliveryZone(!specialDeliveryZone)}
+            />
             <Text type="Caption">제주도 및 도서 산간 지역</Text>
           </Flex>
         </Flex>
@@ -132,12 +162,13 @@ export const OrderCheckout = ({ cartItems }: CartConfirmProps) => {
         결제확인
       </Button>
       <CouponModal
-        isAutoMode={isAutoMode}
-        coupons={coupons ?? []}
-        totalPrice={totalPrice}
-        cartItems={cartItems}
-        specialDeliveryZone={specialDeliveryZone}
-        onApplyCoupon={applyCoupon}
+        defaultCheckedCouponIds={selectedCouponIds}
+        couponItems={coupons.map((coupon) => ({
+          ...coupon,
+          isChecked: selectedCouponIds.has(coupon.id),
+          isDisabled: isCouponDisabled(coupon, cartItems, totalPrice, specialDeliveryZone),
+        }))}
+        onApplyCoupons={handleApplyCoupons}
         title="쿠폰을 선택해 주세요"
         isOpen={isOpen}
         onClose={handleCloseModal}

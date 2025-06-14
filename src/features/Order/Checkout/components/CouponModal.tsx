@@ -1,49 +1,62 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import styled from '@emotion/styled';
 import { Modal, type ModalProps } from '@sebin0580/modal';
 
-import { CartItem } from '@/features/Cart/types/Cart.types';
 import { Button } from '@/shared/components/Button';
 import { CheckBox } from '@/shared/components/CheckBox';
 import { Flex } from '@/shared/components/Flex';
 import { Text } from '@/shared/components/Text';
 
-import { useModalSelectCoupon } from '../hooks/useModalSelectCoupon';
 import { CouponItem } from '../type/coupon.type';
 import { formatDate } from '../utils/formatDate';
 import { parseHour } from '../utils/parseHour';
 
 type CouponModalProps = {
-  isAutoMode: boolean;
-  cartItems: CartItem[];
-  coupons: CouponItem[];
-  totalPrice: number;
-  onApplyCoupon: (id: number) => void;
-  specialDeliveryZone: boolean;
+  defaultCheckedCouponIds: Set<number>;
+  couponItems: CouponItem[];
+  onApplyCoupons: (ids: Set<number>) => void;
+  title: string;
 } & ModalProps;
 
 export const CouponModal = ({
-  isAutoMode,
-  coupons,
-  onApplyCoupon,
+  defaultCheckedCouponIds,
+  couponItems,
+  onApplyCoupons,
   isOpen,
-  totalPrice,
-  cartItems,
-  title,
-  specialDeliveryZone,
   onClose,
+  title,
 }: CouponModalProps) => {
-  const { modalCoupons, handleTempToggle, disCountPrice, handleConfirm } = useModalSelectCoupon({
-    isAutoMode,
-    coupons,
-    onApplyCoupon,
-    totalPrice,
-    isOpen,
-    onClose,
-    cartItems,
-    specialDeliveryZone,
-  });
-  const allChecked = modalCoupons.filter((item) => item.isChecked).length === 2;
+  const [checkedCouponIds, setCheckedCouponIds] = useState<Set<number>>(defaultCheckedCouponIds);
+
+  const handleCheckedCoupon = (id: number) => {
+    if (!checkedCouponIds.has(id) && checkedCouponIds.size === 2) return;
+
+    setCheckedCouponIds((prev) => {
+      const newSet = new Set(prev);
+
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+
+      return newSet;
+    });
+  };
+
+  const modalItems = couponItems.map((couponItem) => ({
+    ...couponItem,
+    isChecked: checkedCouponIds.has(couponItem.id),
+    isDisabled:
+      couponItem.isDisabled || (checkedCouponIds.size >= 2 && !checkedCouponIds.has(couponItem.id)),
+  }));
+
+  const allChecked = modalItems.filter((item) => item.isChecked).length === 2;
+
+  const handleApplyCoupons = () => {
+    onApplyCoupons(checkedCouponIds);
+    onClose();
+  };
 
   return (
     <Modal isOpen={isOpen} title={title} onClose={onClose}>
@@ -58,7 +71,7 @@ export const CouponModal = ({
         <Text type="Caption">🥸 쿠폰은 최대 2개까지 사용할 수 있습니다.</Text>
       </Flex>
       <StyledSpacing />
-      {modalCoupons?.map((item) => {
+      {modalItems?.map((item) => {
         const isGrayedOut = (allChecked && !item.isChecked) || item.isDisabled;
         return (
           <Fragment key={item.id}>
@@ -79,7 +92,7 @@ export const CouponModal = ({
               >
                 <CheckBox
                   checked={item.isChecked}
-                  onClick={() => !item.isDisabled && handleTempToggle(item.id)}
+                  onClick={() => !item.isDisabled && handleCheckedCoupon(item.id)}
                 />
                 <Text type="Title" color={isGrayedOut ? 'gray' : 'black'}>
                   {item.description}
@@ -104,8 +117,8 @@ export const CouponModal = ({
           </Fragment>
         );
       })}
-      <Button size="lg" width="100%" onClick={handleConfirm}>
-        {`총 ${disCountPrice.toLocaleString()}원 할인 쿠폰 사용하기`}
+      <Button size="lg" width="100%" onClick={handleApplyCoupons}>
+        {`총 ${checkedCouponIds.size}개 쿠폰 사용하기`}
       </Button>
     </Modal>
   );
